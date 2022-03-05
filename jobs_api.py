@@ -23,16 +23,19 @@ def get_jobs():
     )
 
 
-@blueprint.route('/api/jobs/<int:job_id>', methods=['GET'])
+@blueprint.route('/api/jobs/<job_id>', methods=['GET'])
 def get_job(job_id):
+    if not job_id.isdigit():
+        return {}
     db_sess = db_session.create_session()
-    news = db_sess.query(Jobs).filter(Jobs.id == job_id)
-    return jsonify(
-        {
-            'jobs':
-                [item.to_dict() for item in news]
-        }
-    )
+    job = db_sess.query(Jobs).filter(Jobs.id == job_id).first()
+    if job:
+        return jsonify(
+            {
+                'jobs': job.to_dict()
+            }
+        )
+    return jsonify({})
 
 
 def main():
