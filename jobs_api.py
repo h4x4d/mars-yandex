@@ -14,7 +14,7 @@ blueprint = flask.Blueprint(
 @blueprint.route('/api/jobs', methods=['GET', 'POST'])
 def get_jobs():
     db_sess = db_session.create_session()
-    if request.method() == 'GET':
+    if request.method == 'GET':
         news = db_sess.query(Jobs).all()
         return jsonify(
             {
@@ -33,6 +33,8 @@ def get_jobs():
             return jsonify({'error': 'Id already exists'})
 
         r = request.json
+        if type(r['id']) != int or type(r['team_leader']) != int or type(r['work_size']) != int:
+            return jsonify({'error': 'Datatype Mismatch'})
         job = Jobs()
         job.id = r['id']
         job.team_leader = r['team_leader']
