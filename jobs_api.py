@@ -1,5 +1,5 @@
 import flask
-from flask import jsonify
+from flask import jsonify, request
 
 from data import db_session
 from data.__all_models import *
@@ -11,16 +11,41 @@ blueprint = flask.Blueprint(
 )
 
 
-@blueprint.route('/api/jobs')
+@blueprint.route('/api/jobs', methods=['GET', 'POST'])
 def get_jobs():
     db_sess = db_session.create_session()
-    news = db_sess.query(Jobs).all()
-    return jsonify(
-        {
-            'jobs':
-                [item.to_dict() for item in news]
-        }
-    )
+    if request.method() == 'GET':
+        news = db_sess.query(Jobs).all()
+        return jsonify(
+            {
+                'jobs':
+                    [item.to_dict() for item in news]
+            }
+        )
+    else:
+        if not all(key in request.json for key in
+                 ['id', 'team_leader', 'job', 'work_size', 'collaborators']):
+            return jsonify({})
+
+        check = db_sess.query(Jobs).filter(Jobs.id == request.json['id']).first()
+
+        if check:
+            return jsonify({'error': 'Id already exists'})
+
+        r = request.json
+        job = Jobs()
+        job.id = r['id']
+        job.team_leader = r['team_leader']
+        job.job = r['job']
+        job.work_size = r['work_size']
+        job.collaborators = r['collaborators']
+        db_sess.add(job)
+        db_sess.commit()
+
+        return jsonify({'success': True})
+
+
+
 
 
 @blueprint.route('/api/jobs/<job_id>', methods=['GET'])
