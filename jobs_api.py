@@ -49,10 +49,12 @@ def get_jobs():
 
 @blueprint.route('/api/jobs/delete/<job_id>', methods=['DELETE'])
 def del_jobs(job_id):
+    if not job_id.isdigit():
+        return jsonify({'error': 'Datatype Mismatch'})
     db_sess = db_session.create_session()
     job = db_sess.query(Jobs).filter(Jobs.id == job_id).first()
     if not job:
-        return jsonify({})
+        return jsonify({'error': 'Not exists'})
     db_sess.delete(job)
     db_sess.commit()
     return jsonify({'Success': True})
