@@ -48,15 +48,13 @@ def get_jobs():
 
 
 @blueprint.route('/api/jobs/edit/<job_id>', methods=['GET', 'POST'])
-def get_jobs(job_id):
+def edit_jobs(job_id):
     db_sess = db_session.create_session()
 
-    job = db_sess.query(Jobs).filter(Jobs.id == request.json['id']).first()
+    job = db_sess.query(Jobs).filter(Jobs.id == int(job_id)).first()
     r = dict(request.json)
-    if type(r['id']) != int or type(r['team_leader']) != int or type(r['work_size']) != int:
-        return jsonify({'error': 'Datatype Mismatch'})
     for key in r.keys():
-        job[key] = r[key]
+        exec(f'job.{key} = r["{key}"]')
     db_sess.commit()
 
     return jsonify({'success': True})
